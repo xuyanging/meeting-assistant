@@ -1,0 +1,62 @@
+{
+  "name": "interview-assistant",
+  "version": "1.0.0",
+  "description": "Floating semi-transparent interview assistant powered by Gemini, invisible during screen sharing on macOS",
+  "main": "main.js",
+  "author": "yangxu",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "dist": "electron-builder --mac --arm64",
+    "dist:x64": "electron-builder --mac --x64",
+    "dist:universal": "electron-builder --mac --universal"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^26.8.1",
+    "katex": "^0.16.47",
+    "marked": "^18.0.4"
+  },
+  "build": {
+    "appId": "com.yangxu.interview-assistant",
+    "productName": "面试助手",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "afterPack": "./scripts/after-pack.js",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        { "target": "dmg", "arch": ["arm64"] }
+      ],
+      "identity": null,
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "InterviewAssistant-${version}-${arch}.${ext}",
+      "extendInfo": {
+        "LSUIElement": false,
+        "NSHighResolutionCapable": true
+      }
+    },
+    "dmg": {
+      "title": "面试助手 ${version}",
+      "writeUpdateInfo": false,
+      "contents": [
+        { "x": 130, "y": 220, "type": "file" },
+        { "x": 410, "y": 220, "type": "link", "path": "/Applications" }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    }
+  }
+}

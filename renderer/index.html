@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src https://generativelanguage.googleapis.com;">
+  <title>面试助手</title>
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <div class="titlebar">
+      <div class="drag-region">
+        <span class="title">面试助手</span>
+        <span class="status" id="status-dot" title="屏幕共享时不可见"></span>
+        <span class="hint">⌘⇧\ 显隐</span>
+      </div>
+      <div class="controls">
+        <button id="opacity-btn" title="窗口透明度">◐</button>
+        <button id="settings-btn" title="设置">⚙</button>
+        <button id="clear-btn" title="清空对话">⌫</button>
+        <button id="hide-btn" title="隐藏窗口">−</button>
+        <button id="close-btn" class="close" title="退出">✕</button>
+      </div>
+    </div>
+
+    <div class="panel opacity-panel hidden" id="opacity-panel">
+      <label>窗口透明度</label>
+      <input type="range" id="opacity-slider" min="0.3" max="1" step="0.02" value="0.92">
+      <span id="opacity-value">92%</span>
+    </div>
+
+    <div class="panel settings-panel hidden" id="settings-panel">
+      <label>
+        Gemini API Key
+        <a href="#" id="open-key-link" class="link-hint">如何获取?</a>
+      </label>
+      <input type="password" id="api-key" placeholder="AIza...">
+
+      <label>模型</label>
+      <select id="model-select">
+        <optgroup label="Gemini 3 系列 (预览, 最新)">
+          <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (最强, 深度推理)</option>
+          <option value="gemini-3-flash-preview">Gemini 3 Flash (前沿, 快)</option>
+          <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash-Lite (极速)</option>
+        </optgroup>
+        <optgroup label="Gemini 2.5 系列 (稳定)">
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro (旗舰稳定版)</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash (性价比)</option>
+          <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite (最便宜)</option>
+        </optgroup>
+      </select>
+
+      <label>系统提示词 (可选, 设定 AI 角色)</label>
+      <textarea id="system-prompt" rows="3" placeholder="例：你是一位资深的全栈工程师面试助手。我现在正在面试中，回答要简洁、准确、口语化，包含技术要点。"></textarea>
+
+      <label class="checkbox">
+        <input type="checkbox" id="content-protection-toggle" checked>
+        <span>屏幕共享时不可见 (建议保持开启)</span>
+      </label>
+
+      <div class="settings-actions">
+        <button id="save-settings" class="primary">保存</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-title">面试助手已就绪</div>
+        <div class="welcome-row">
+          <span class="badge ok">●</span> 屏幕共享时此窗口对方<b>不可见</b>
+        </div>
+        <div class="welcome-row">
+          <span class="badge">⌘⇧\</span> 显示 / 隐藏窗口
+        </div>
+        <div class="welcome-row">
+          <span class="badge">⌘⇧↵</span> 唤起并聚焦输入
+        </div>
+        <div class="welcome-tip">首次使用请点击右上角 <b>⚙</b> 配置 Gemini API Key</div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="input" rows="2" placeholder="输入问题... (Enter 发送, Shift+Enter 换行)"></textarea>
+      <button id="send-btn" title="发送 (Enter)">↑</button>
+    </div>
+  </div>
+
+  <script src="vendor/marked.umd.js"></script>
+  <script src="vendor/katex/katex.min.js"></script>
+  <script src="vendor/katex/auto-render.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
