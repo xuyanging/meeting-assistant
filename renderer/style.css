@@ -563,22 +563,7 @@ button.primary:hover {
   align-items: flex-end;
 }
 
-/* 真实 textarea 移到屏幕外，IME 候选框跟随它出现在屏幕外不被录屏 */
-.offscreen-input {
-  position: fixed;
-  left: -9999px;
-  top: -9999px;
-  width: 300px;
-  height: 38px;
-  opacity: 0;
-  pointer-events: none;
-  font-size: 13px;
-  font-family: inherit;
-  line-height: 1.5;
-}
-
-/* 仿输入框，视觉上替代 textarea */
-.input-display {
+#input {
   flex: 1;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -587,47 +572,21 @@ button.primary:hover {
   color: #fff;
   font-size: 13px;
   font-family: inherit;
-  line-height: 1.5;
-  min-height: 38px;
-  max-height: 140px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  cursor: text;
-  transition: border-color 0.15s;
+  resize: none;
+  outline: none;
   user-select: text;
   -webkit-user-select: text;
+  line-height: 1.5;
+  max-height: 140px;
+  transition: border-color 0.15s;
 }
 
-.input-display.focused {
-  border-color: rgba(74, 140, 255, 0.55);
-}
-
-.input-display.empty::before {
-  content: attr(data-placeholder);
+#input::placeholder {
   color: rgba(255, 255, 255, 0.32);
-  pointer-events: none;
 }
 
-/* IME 候选中的文字显示为下划线 */
-.composing {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* 仿光标，聚焦时闪烁 */
-.input-cursor {
-  display: none;
-  width: 1.5px;
-  height: 1em;
-  background: rgba(255, 255, 255, 0.85);
-  margin-left: 1px;
-  vertical-align: text-bottom;
-  animation: blink 1s infinite;
-}
-
-.input-display.focused .input-cursor {
-  display: inline-block;
+#input:focus {
+  border-color: rgba(74, 140, 255, 0.55);
 }
 
 #send-btn {

@@ -3,9 +3,6 @@ const messagesEl = document.getElementById('messages');
 const welcomeEl = document.getElementById('welcome');
 const inputEl = document.getElementById('input');
 const sendBtn = document.getElementById('send-btn');
-const inputDisplayEl = document.getElementById('input-display');
-const inputTextEl = document.getElementById('input-text');
-const inputCompEl = document.getElementById('input-comp');
 
 const settingsBtn = document.getElementById('settings-btn');
 const settingsPanel = document.getElementById('settings-panel');
@@ -134,45 +131,6 @@ closeBtn.addEventListener('click', () => {
   if (confirm('退出面试助手?')) window.electronAPI.close();
 });
 
-// ============ 离屏输入同步 ============
-function updateDisplay() {
-  const text = inputEl.value;
-  inputTextEl.textContent = text;
-  if (!text && !inputCompEl.textContent) {
-    inputDisplayEl.classList.add('empty');
-  } else {
-    inputDisplayEl.classList.remove('empty');
-  }
-  // 同步高度
-  const lines = Math.max(1, (text || '').split('\n').length);
-  const h = Math.min(lines * 19.5 + 18, 140);
-  inputDisplayEl.style.minHeight = Math.max(38, h) + 'px';
-}
-
-inputDisplayEl.addEventListener('mousedown', (e) => {
-  e.preventDefault();
-  inputEl.focus();
-});
-
-inputEl.addEventListener('focus', () => inputDisplayEl.classList.add('focused'));
-inputEl.addEventListener('blur', () => {
-  inputDisplayEl.classList.remove('focused');
-  inputCompEl.textContent = '';
-  updateDisplay();
-});
-
-inputEl.addEventListener('compositionstart', () => {
-  inputCompEl.textContent = '';
-});
-inputEl.addEventListener('compositionupdate', (e) => {
-  inputCompEl.textContent = e.data || '';
-  inputDisplayEl.classList.remove('empty');
-});
-inputEl.addEventListener('compositionend', () => {
-  inputCompEl.textContent = '';
-  updateDisplay();
-});
-
 // Input handling
 inputEl.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
@@ -184,7 +142,6 @@ inputEl.addEventListener('keydown', (e) => {
 inputEl.addEventListener('input', () => {
   inputEl.style.height = 'auto';
   inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
-  updateDisplay();
 });
 
 sendBtn.addEventListener('click', send);
@@ -222,7 +179,6 @@ async function send() {
 
   inputEl.value = '';
   inputEl.style.height = 'auto';
-  updateDisplay();
 
   // Placeholder for assistant
   const assistantEl = addMessage('assistant', '');
