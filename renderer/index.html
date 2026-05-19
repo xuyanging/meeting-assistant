@@ -81,7 +81,10 @@
     </div>
 
     <div class="input-area">
-      <textarea id="input" rows="2" placeholder="输入问题... (Enter 发送, Shift+Enter 换行)"></textarea>
+      <textarea id="input" class="offscreen-input" rows="2" placeholder="输入问题... (Enter 发送, Shift+Enter 换行)"></textarea>
+      <div id="input-display" class="input-display empty" data-placeholder="输入问题... (Enter 发送, Shift+Enter 换行)">
+        <span id="input-text"></span><span id="input-comp" class="composing"></span><span class="input-cursor"></span>
+      </div>
       <button id="send-btn" title="发送 (Enter)">↑</button>
     </div>
   </div>
