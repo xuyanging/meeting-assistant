@@ -3,6 +3,11 @@ const path = require('path');
 
 let mainWindow = null;
 
+// 内置输入法状态（主进程侧）
+let imeActive = false;
+let imeInputFocused = false;
+let imeHasBuffer = false;
+
 function createWindow() {
   const { width: screenWidth } = screen.getPrimaryDisplay().workAreaSize;
 
@@ -19,7 +24,7 @@ function createWindow() {
     resizable: true,
     skipTaskbar: false,
     backgroundColor: '#00000000',
-    title: '面试助手',
+    title: 'Mac Assistant',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -36,6 +41,36 @@ function createWindow() {
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+
+  // 内置输入法：在系统 IME 之前拦截按键
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (!imeActive || !imeInputFocused) return;
+
+    if (input.type === 'char') {
+      const k = input.key;
+      if (/^[a-z]$/.test(k)) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:char', k);
+      } else if (/^[1-5]$/.test(k) && imeHasBuffer) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:select', parseInt(k) - 1);
+      } else if (k === ' ' && imeHasBuffer) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:select', 0);
+      }
+    } else if (input.type === 'keyDown') {
+      if (input.key === 'Backspace' && imeHasBuffer) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:backspace');
+      } else if (input.key === 'Escape' && imeHasBuffer) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:escape');
+      } else if (input.key === 'Return' && imeHasBuffer) {
+        event.preventDefault();
+        mainWindow.webContents.send('ime:enter');
+      }
+    }
+  });
 
   mainWindow.on('close', (e) => {
     if (!app.isQuiting) {
@@ -84,6 +119,11 @@ app.on('before-quit', () => {
   app.isQuiting = true;
   globalShortcut.unregisterAll();
 });
+
+// IPC: 内置输入法状态同步
+ipcMain.on('ime:setActive', (_, v) => { imeActive = v; });
+ipcMain.on('ime:setFocus', (_, v) => { imeInputFocused = v; });
+ipcMain.on('ime:setHasBuffer', (_, v) => { imeHasBuffer = v; });
 
 // IPC: 窗口控制
 ipcMain.handle('window:minimize', () => mainWindow?.minimize());

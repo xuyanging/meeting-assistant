@@ -23,6 +23,12 @@ const hideBtn = document.getElementById('hide-btn');
 const closeBtn = document.getElementById('close-btn');
 const statusDot = document.getElementById('status-dot');
 
+const imePanel = document.getElementById('ime-panel');
+const imeBufferEl = document.getElementById('ime-buffer');
+const imeListEl = document.getElementById('ime-list');
+const imeToggleBtn = document.getElementById('ime-toggle');
+let imeMode = false;
+
 // ============ State ============
 const STORAGE_KEY = 'interview-assistant-settings';
 let settings = loadSettings();
@@ -129,6 +135,93 @@ clearBtn.addEventListener('click', () => {
 hideBtn.addEventListener('click', () => window.electronAPI.hide());
 closeBtn.addEventListener('click', () => {
   if (confirm('退出面试助手?')) window.electronAPI.close();
+});
+
+// ============ 内置输入法 ============
+function toggleIme() {
+  imeMode = !imeMode;
+  window.electronAPI.imeSetActive(imeMode);
+  imeToggleBtn.textContent = imeMode ? '中' : 'En';
+  imeToggleBtn.classList.toggle('active', imeMode);
+  if (!imeMode) {
+    window.IMEEngine.reset();
+    hideImePanel();
+  }
+  toast(imeMode ? '内置输入法已开启（系统请切到英文ABC）' : '内置输入法已关闭', 'info', 1800);
+}
+
+function updateImePanel() {
+  const buf = window.IMEEngine.getDisplay();
+  const cands = window.IMEEngine.getCandidates();
+  const hasBuffer = !!window.IMEEngine.getBuffer();
+  window.electronAPI.imeSetHasBuffer(hasBuffer);
+
+  if (!hasBuffer) { hideImePanel(); return; }
+
+  imeBufferEl.textContent = buf;
+  imeListEl.innerHTML = cands.map((c, i) =>
+    `<span class="ime-cand" data-idx="${i}"><span class="ime-num">${i + 1}.</span>${c}</span>`
+  ).join('');
+  imePanel.style.display = 'flex';
+}
+
+function hideImePanel() {
+  imePanel.style.display = 'none';
+  imeBufferEl.textContent = '';
+  imeListEl.innerHTML = '';
+  window.electronAPI.imeSetHasBuffer(false);
+}
+
+function imeInsert(text) {
+  const s = inputEl.selectionStart;
+  const e = inputEl.selectionEnd;
+  inputEl.value = inputEl.value.slice(0, s) + text + inputEl.value.slice(e);
+  inputEl.selectionStart = inputEl.selectionEnd = s + text.length;
+  inputEl.dispatchEvent(new Event('input'));
+}
+
+imeToggleBtn.addEventListener('click', toggleIme);
+
+imeListEl.addEventListener('click', (e) => {
+  const el = e.target.closest('.ime-cand');
+  if (!el) return;
+  const word = window.IMEEngine.select(parseInt(el.dataset.idx));
+  if (word) { imeInsert(word); updateImePanel(); }
+});
+
+inputEl.addEventListener('focus', () => window.electronAPI.imeSetFocus(true));
+inputEl.addEventListener('blur', () => window.electronAPI.imeSetFocus(false));
+
+window.electronAPI.onImeChar((char) => {
+  window.IMEEngine.push(char);
+  updateImePanel();
+});
+
+window.electronAPI.onImeSelect((idx) => {
+  const word = window.IMEEngine.select(idx);
+  if (word) { imeInsert(word); updateImePanel(); }
+});
+
+window.electronAPI.onImeBackspace(() => {
+  window.IMEEngine.pop();
+  updateImePanel();
+});
+
+window.electronAPI.onImeEscape(() => {
+  window.IMEEngine.reset();
+  hideImePanel();
+});
+
+window.electronAPI.onImeEnter(() => {
+  const cands = window.IMEEngine.getCandidates();
+  if (cands.length > 0) {
+    const word = window.IMEEngine.select(0);
+    if (word) imeInsert(word);
+  } else {
+    imeInsert(window.IMEEngine.getBuffer());
+    window.IMEEngine.reset();
+  }
+  updateImePanel();
 });
 
 // Input handling

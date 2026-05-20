@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src https://generativelanguage.googleapis.com;">
-  <title>面试助手</title>
+  <title>Mac Assistant</title>
   <link rel="stylesheet" href="vendor/katex/katex.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -11,7 +11,7 @@
   <div class="app">
     <div class="titlebar">
       <div class="drag-region">
-        <span class="title">面试助手</span>
+        <span class="title">Mac Assistant</span>
         <span class="status" id="status-dot" title="屏幕共享时不可见"></span>
         <span class="hint">⌘⇧\ 显隐</span>
       </div>
@@ -66,7 +66,7 @@
 
     <div class="messages" id="messages">
       <div class="welcome" id="welcome">
-        <div class="welcome-title">面试助手已就绪</div>
+        <div class="welcome-title">Mac Assistant 已就绪</div>
         <div class="welcome-row">
           <span class="badge ok">●</span> 屏幕共享时此窗口对方<b>不可见</b>
         </div>
@@ -80,8 +80,14 @@
       </div>
     </div>
 
+    <div class="ime-panel" id="ime-panel" style="display:none">
+      <span class="ime-buffer" id="ime-buffer"></span>
+      <span class="ime-list" id="ime-list"></span>
+    </div>
+
     <div class="input-area">
       <textarea id="input" rows="2" placeholder="输入问题... (Enter 发送, Shift+Enter 换行)"></textarea>
+      <button id="ime-toggle" class="ime-toggle-btn" title="切换内置中文输入法（系统请切到英文ABC模式）">En</button>
       <button id="send-btn" title="发送 (Enter)">↑</button>
     </div>
   </div>
@@ -89,6 +95,8 @@
   <script src="vendor/marked.umd.js"></script>
   <script src="vendor/katex/katex.min.js"></script>
   <script src="vendor/katex/auto-render.min.js"></script>
+  <script src="ime/dict.js"></script>
+  <script src="ime/engine.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

@@ -19,7 +19,7 @@
   },
   "build": {
     "appId": "com.yangxu.interview-assistant",
-    "productName": "面试助手",
+    "productName": "Mac Assistant",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -47,7 +47,7 @@
       }
     },
     "dmg": {
-      "title": "面试助手 ${version}",
+      "title": "Mac Assistant ${version}",
       "writeUpdateInfo": false,
       "contents": [
         { "x": 130, "y": 220, "type": "file" },
