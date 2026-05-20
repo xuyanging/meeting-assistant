@@ -668,6 +668,19 @@ button.primary:hover {
   margin-right: 2px;
 }
 
+.ime-page {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.35);
+  white-space: nowrap;
+}
+
+.ime-page-hint {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 10px;
+}
+
+
 .ime-toggle-btn {
   width: 30px;
   height: 36px;

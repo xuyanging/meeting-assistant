@@ -28,6 +28,8 @@ const imeBufferEl = document.getElementById('ime-buffer');
 const imeListEl = document.getElementById('ime-list');
 const imeToggleBtn = document.getElementById('ime-toggle');
 let imeMode = false;
+let imePage = 0;
+const IME_PAGE_SIZE = 5;
 
 // ============ State ============
 const STORAGE_KEY = 'interview-assistant-settings';
@@ -140,28 +142,27 @@ closeBtn.addEventListener('click', () => {
 // ============ 内置输入法 ============
 function toggleIme() {
   imeMode = !imeMode;
-  window.electronAPI.imeSetActive(imeMode);
   imeToggleBtn.textContent = imeMode ? '中' : 'En';
   imeToggleBtn.classList.toggle('active', imeMode);
-  if (!imeMode) {
-    window.IMEEngine.reset();
-    hideImePanel();
-  }
+  if (!imeMode) { window.IMEEngine.reset(); hideImePanel(); }
+  inputEl.focus();
   toast(imeMode ? '内置输入法已开启（系统请切到英文ABC）' : '内置输入法已关闭', 'info', 1800);
 }
 
 function updateImePanel() {
+  if (!window.IMEEngine.getBuffer()) { hideImePanel(); return; }
   const buf = window.IMEEngine.getDisplay();
-  const cands = window.IMEEngine.getCandidates();
-  const hasBuffer = !!window.IMEEngine.getBuffer();
-  window.electronAPI.imeSetHasBuffer(hasBuffer);
-
-  if (!hasBuffer) { hideImePanel(); return; }
+  const allCands = window.IMEEngine.getCandidates();
+  const totalPages = Math.max(1, Math.ceil(allCands.length / IME_PAGE_SIZE));
+  if (imePage >= totalPages) imePage = totalPages - 1;
+  const pageCands = allCands.slice(imePage * IME_PAGE_SIZE, (imePage + 1) * IME_PAGE_SIZE);
 
   imeBufferEl.textContent = buf;
-  imeListEl.innerHTML = cands.map((c, i) =>
-    `<span class="ime-cand" data-idx="${i}"><span class="ime-num">${i + 1}.</span>${c}</span>`
-  ).join('');
+  imeListEl.innerHTML = pageCands.map((c, i) =>
+    `<span class="ime-cand" data-idx="${imePage * IME_PAGE_SIZE + i}"><span class="ime-num">${i + 1}.</span>${c}</span>`
+  ).join('') + (totalPages > 1
+    ? `<span class="ime-page">${imePage + 1}/${totalPages} <span class="ime-page-hint">←→翻页</span></span>`
+    : '');
   imePanel.style.display = 'flex';
 }
 
@@ -169,7 +170,7 @@ function hideImePanel() {
   imePanel.style.display = 'none';
   imeBufferEl.textContent = '';
   imeListEl.innerHTML = '';
-  window.electronAPI.imeSetHasBuffer(false);
+  imePage = 0;
 }
 
 function imeInsert(text) {
@@ -182,50 +183,93 @@ function imeInsert(text) {
 
 imeToggleBtn.addEventListener('click', toggleIme);
 
-imeListEl.addEventListener('click', (e) => {
+imeListEl.addEventListener('mousedown', (e) => {
+  // mousedown 而非 click，防止 textarea 先 blur
+  e.preventDefault();
   const el = e.target.closest('.ime-cand');
   if (!el) return;
   const word = window.IMEEngine.select(parseInt(el.dataset.idx));
   if (word) { imeInsert(word); updateImePanel(); }
 });
 
-inputEl.addEventListener('focus', () => window.electronAPI.imeSetFocus(true));
-inputEl.addEventListener('blur', () => window.electronAPI.imeSetFocus(false));
-
-window.electronAPI.onImeChar((char) => {
-  window.IMEEngine.push(char);
-  updateImePanel();
-});
-
-window.electronAPI.onImeSelect((idx) => {
-  const word = window.IMEEngine.select(idx);
-  if (word) { imeInsert(word); updateImePanel(); }
-});
-
-window.electronAPI.onImeBackspace(() => {
-  window.IMEEngine.pop();
-  updateImePanel();
-});
-
-window.electronAPI.onImeEscape(() => {
-  window.IMEEngine.reset();
-  hideImePanel();
-});
-
-window.electronAPI.onImeEnter(() => {
-  const cands = window.IMEEngine.getCandidates();
-  if (cands.length > 0) {
-    const word = window.IMEEngine.select(0);
-    if (word) imeInsert(word);
-  } else {
-    imeInsert(window.IMEEngine.getBuffer());
-    window.IMEEngine.reset();
-  }
-  updateImePanel();
-});
-
-// Input handling
+// Input handling（所有键盘逻辑集中在这里）
 inputEl.addEventListener('keydown', (e) => {
+  if (imeMode && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const hasBuffer = !!window.IMEEngine.getBuffer();
+
+    // 字母键 → 加入拼音缓冲
+    if (/^[a-z]$/.test(e.key)) {
+      e.preventDefault();
+      imePage = 0;
+      window.IMEEngine.push(e.key);
+      updateImePanel();
+      return;
+    }
+    // 数字 1-5 → 选当前页候选
+    if (/^[1-5]$/.test(e.key) && hasBuffer) {
+      e.preventDefault();
+      const idx = imePage * IME_PAGE_SIZE + parseInt(e.key) - 1;
+      const allCands = window.IMEEngine.getCandidates();
+      const word = allCands[idx] ? window.IMEEngine.select(idx) : null;
+      if (word) imeInsert(word);
+      imePage = 0;
+      updateImePanel();
+      return;
+    }
+    // 空格 → 选当前页第一个候选
+    if (e.key === ' ' && hasBuffer) {
+      e.preventDefault();
+      const idx = imePage * IME_PAGE_SIZE;
+      const allCands = window.IMEEngine.getCandidates();
+      const word = allCands[idx] ? window.IMEEngine.select(idx) : null;
+      if (word) imeInsert(word);
+      imePage = 0;
+      updateImePanel();
+      return;
+    }
+    // → 下一页
+    if (e.key === 'ArrowRight' && hasBuffer) {
+      e.preventDefault();
+      const allCands = window.IMEEngine.getCandidates();
+      const totalPages = Math.ceil(allCands.length / IME_PAGE_SIZE);
+      if (imePage < totalPages - 1) { imePage++; updateImePanel(); }
+      return;
+    }
+    // ← 上一页
+    if (e.key === 'ArrowLeft' && hasBuffer) {
+      e.preventDefault();
+      if (imePage > 0) { imePage--; updateImePanel(); }
+      return;
+    }
+    // Backspace → 删拼音缓冲最后一个字母
+    if (e.key === 'Backspace' && hasBuffer) {
+      e.preventDefault();
+      imePage = 0;
+      window.IMEEngine.pop();
+      updateImePanel();
+      return;
+    }
+    // Escape → 取消输入
+    if (e.key === 'Escape' && hasBuffer) {
+      e.preventDefault();
+      window.IMEEngine.reset();
+      hideImePanel();
+      return;
+    }
+    // Enter → 上屏第一个候选或原始拼音
+    if (e.key === 'Enter' && hasBuffer) {
+      e.preventDefault();
+      const allCands = window.IMEEngine.getCandidates();
+      const idx = imePage * IME_PAGE_SIZE;
+      const word = allCands[idx] ? window.IMEEngine.select(idx) : null;
+      if (word) { imeInsert(word); } else { imeInsert(window.IMEEngine.getBuffer()); window.IMEEngine.reset(); }
+      imePage = 0;
+      updateImePanel();
+      return;
+    }
+  }
+
+  // 原始 Enter 发送消息
   if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
     send();

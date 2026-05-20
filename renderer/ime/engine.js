@@ -50,7 +50,7 @@ window.IMEEngine = (() => {
       (charDict[first] || []).slice(0, 8).forEach(add);
     }
 
-    return candidates.slice(0, 5);
+    return candidates.slice(0, 30);
   }
 
   function select(index) {
