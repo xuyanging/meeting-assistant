@@ -72,8 +72,7 @@ function applySettings() {
   const op = settings.opacity || 0.92;
   opacitySlider.value = op;
   opacityValue.textContent = Math.round(op * 100) + '%';
-
-  window.electronAPI.setOpacity(op);
+  document.documentElement.style.setProperty('--app-alpha', op);
   window.electronAPI.setContentProtection(cpToggle.checked);
   statusDot.classList.toggle('off', !cpToggle.checked);
   statusDot.title = cpToggle.checked
@@ -107,7 +106,7 @@ opacitySlider.addEventListener('input', (e) => {
   const v = parseFloat(e.target.value);
   settings.opacity = v;
   opacityValue.textContent = Math.round(v * 100) + '%';
-  window.electronAPI.setOpacity(v);
+  document.documentElement.style.setProperty('--app-alpha', v);
   persistSettings();
 });
 
