@@ -1,6 +1,6 @@
 {
   "name": "meeting-assistant",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Floating semi-transparent meeting assistant powered by Gemini, invisible during screen sharing on macOS",
   "main": "main.js",
   "author": "yangxu",
@@ -78,7 +78,10 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "artifactName": "MacAssistant-${version}-win-${arch}.${ext}"
