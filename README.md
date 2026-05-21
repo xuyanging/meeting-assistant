@@ -24,8 +24,8 @@
 brew install node
 
 # 2. 克隆项目
-git clone https://github.com/xuyanging/interview-assistant.git
-cd interview-assistant
+git clone https://github.com/xuyanging/meeting-assistant.git
+cd meeting-assistant
 
 # 3. 安装依赖
 npm install
@@ -122,7 +122,7 @@ node scripts/build-dict.js          # 生成 renderer/ime/dict.js
 - **勾选**（默认）：所有 Gemini 请求经隧道到云服务器，再到 Google
 - **不勾选**：直连，跟普通浏览器访问 Gemini 一样
 
-切换无需重启。开关状态持久化在 `~/Library/Application Support/interview-assistant/proxy-config.json`。
+切换无需重启。开关状态持久化在 `~/Library/Application Support/meeting-assistant/proxy-config.json`。
 
 ### 工作原理
 

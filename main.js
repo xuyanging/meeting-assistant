@@ -3,6 +3,27 @@ const path = require('path');
 const fs = require('fs');
 const { startProxy, stopProxy } = require('./proxy');
 
+// One-time userData migration from the previous app name. Safe to leave in:
+// after the first launch it's a no-op (new dir exists).
+(function migrateLegacyUserData() {
+  try {
+    const root = app.getPath('appData');
+    const oldDir = path.join(root, 'interview-assistant');
+    const newDir = path.join(root, 'meeting-assistant');
+    if (!fs.existsSync(oldDir) || fs.existsSync(newDir)) return;
+    fs.mkdirSync(newDir, { recursive: true });
+    for (const item of ['Local Storage', 'proxy-config.json']) {
+      const src = path.join(oldDir, item);
+      if (fs.existsSync(src)) {
+        fs.cpSync(src, path.join(newDir, item), { recursive: true });
+      }
+    }
+    console.log('[migrate] copied legacy userData');
+  } catch (e) {
+    console.warn('[migrate] failed:', e.message);
+  }
+})();
+
 let mainWindow = null;
 let proxyPort = null;
 

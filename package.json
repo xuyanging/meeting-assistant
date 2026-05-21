@@ -1,5 +1,5 @@
 {
-  "name": "interview-assistant",
+  "name": "meeting-assistant",
   "version": "1.0.0",
   "description": "Floating semi-transparent meeting assistant powered by Gemini, invisible during screen sharing on macOS",
   "main": "main.js",
@@ -18,7 +18,7 @@
     "marked": "^18.0.4"
   },
   "build": {
-    "appId": "com.yangxu.interview-assistant",
+    "appId": "com.yangxu.meeting-assistant",
     "productName": "Mac Assistant",
     "directories": {
       "output": "dist",
