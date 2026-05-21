@@ -10,6 +10,7 @@ const apiKeyInput = document.getElementById('api-key');
 const modelSelect = document.getElementById('model-select');
 const systemPromptInput = document.getElementById('system-prompt');
 const cpToggle = document.getElementById('content-protection-toggle');
+const proxyToggle = document.getElementById('proxy-toggle');
 const saveSettingsBtn = document.getElementById('save-settings');
 const openKeyLink = document.getElementById('open-key-link');
 
@@ -82,6 +83,15 @@ function applySettings() {
 
 applySettings();
 
+// Proxy toggle state lives in main process, not localStorage
+(async () => {
+  try {
+    proxyToggle.checked = await window.electronAPI.proxyGetEnabled();
+  } catch (e) {
+    console.warn('proxy state load failed', e);
+  }
+})();
+
 // ============ UI Events ============
 settingsBtn.addEventListener('click', () => {
   settingsPanel.classList.toggle('hidden');
@@ -107,6 +117,17 @@ cpToggle.addEventListener('change', () => {
   statusDot.title = cpToggle.checked
     ? '屏幕共享时此窗口不可见'
     : '⚠️ 屏幕共享保护已关闭 (对方可能看到)';
+});
+
+proxyToggle.addEventListener('change', async () => {
+  const on = proxyToggle.checked;
+  try {
+    await window.electronAPI.proxySetEnabled(on);
+    toast(on ? '已通过中继代理' : '已切换为直连', 'success', 2000);
+  } catch (e) {
+    toast('代理切换失败: ' + e.message, 'error');
+    proxyToggle.checked = !on;
+  }
 });
 
 saveSettingsBtn.addEventListener('click', () => {

@@ -9,4 +9,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setContentProtection: (flag) => ipcRenderer.invoke('window:set-content-protection', flag),
   getState: () => ipcRenderer.invoke('window:get-state'),
   onFocusInput: (cb) => ipcRenderer.on('focus-input', cb),
+  proxyGetEnabled: () => ipcRenderer.invoke('proxy:get-enabled'),
+  proxySetEnabled: (enabled) => ipcRenderer.invoke('proxy:set-enabled', enabled),
 });

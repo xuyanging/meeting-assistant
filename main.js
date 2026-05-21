@@ -1,7 +1,56 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, session } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const { startProxy, stopProxy } = require('./proxy');
 
 let mainWindow = null;
+let proxyPort = null;
+
+function proxyConfigPath() {
+  return path.join(app.getPath('userData'), 'proxy-config.json');
+}
+
+function readProxyEnabled() {
+  try {
+    return !!JSON.parse(fs.readFileSync(proxyConfigPath(), 'utf8')).enabled;
+  } catch (_) {
+    return true; // default on
+  }
+}
+
+function writeProxyEnabled(enabled) {
+  try {
+    fs.mkdirSync(path.dirname(proxyConfigPath()), { recursive: true });
+    fs.writeFileSync(proxyConfigPath(), JSON.stringify({ enabled: !!enabled }));
+  } catch (e) {
+    console.warn('[main] persist proxy state failed:', e.message);
+  }
+}
+
+async function enableProxy() {
+  try {
+    const { port } = await startProxy();
+    proxyPort = port;
+    await session.defaultSession.setProxy({
+      proxyRules: `socks5://127.0.0.1:${port}`,
+      proxyBypassRules: '<local>',
+    });
+    console.log('[main] proxy enabled on port', port);
+  } catch (e) {
+    console.error('[main] proxy enable failed:', e);
+  }
+}
+
+async function disableProxy() {
+  try {
+    await session.defaultSession.setProxy({ mode: 'direct' });
+    stopProxy();
+    proxyPort = null;
+    console.log('[main] proxy disabled, direct connection');
+  } catch (e) {
+    console.error('[main] proxy disable failed:', e);
+  }
+}
 
 
 function createWindow() {
@@ -46,7 +95,12 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  if (readProxyEnabled()) {
+    await enableProxy();
+  } else {
+    console.log('[main] proxy disabled by user preference');
+  }
   createWindow();
 
   // 全局快捷键：Cmd+Shift+\ 显隐窗口
@@ -109,3 +163,11 @@ ipcMain.handle('window:get-state', () => ({
   platform: process.platform,
   version: app.getVersion(),
 }));
+
+ipcMain.handle('proxy:get-enabled', () => readProxyEnabled());
+ipcMain.handle('proxy:set-enabled', async (_, enabled) => {
+  const on = !!enabled;
+  writeProxyEnabled(on);
+  if (on) await enableProxy(); else await disableProxy();
+  return on;
+});

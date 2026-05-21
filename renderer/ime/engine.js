@@ -6,26 +6,27 @@ window.IMEEngine = (() => {
 
   let buffer = '';
 
-  // 贪心匹配：从 str[i] 开始尝试最长合法音节
+  // DP 切音节：找一条全覆盖路径，避免贪心吞掉过长前缀（如 'jiang' 吃掉 'jian gong'）
   function parseSyllables(str) {
-    const result = [];
-    let i = 0;
-    while (i < str.length) {
-      let matched = false;
-      for (let len = Math.min(6, str.length - i); len >= 1; len--) {
-        const sub = str.slice(i, i + len);
-        if (SYLLABLES.has(sub)) {
-          result.push(sub);
-          i += len;
-          matched = true;
-          break;
+    const n = str.length;
+    if (!n) return [];
+    const reach = new Array(n + 1).fill(false);
+    const parent = new Array(n + 1).fill(-1);
+    reach[0] = true;
+    for (let i = 0; i < n; i++) {
+      if (!reach[i]) continue;
+      for (let len = 1; len <= Math.min(6, n - i); len++) {
+        if (SYLLABLES.has(str.slice(i, i + len)) && !reach[i + len]) {
+          reach[i + len] = true;
+          parent[i + len] = i;
         }
       }
-      if (!matched) {
-        result.push(str.slice(i)); // 剩余未匹配部分
-        break;
-      }
     }
+    let end = n;
+    while (end > 0 && !reach[end]) end--;
+    const result = [];
+    for (let p = end; p > 0; p = parent[p]) result.unshift(str.slice(parent[p], p));
+    if (end < n) result.push(str.slice(end));
     return result;
   }
 

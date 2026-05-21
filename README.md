@@ -6,8 +6,9 @@
 
 - 悬浮在所有窗口之上，包括全屏应用
 - 屏幕共享时窗口自动隐藏（macOS 内容保护机制）
-- 内置拼音输入法，打字时的候选框也对屏幕录制不可见
+- 内置拼音输入法（万级词库），打字时的候选框也对屏幕录制不可见
 - 支持 Gemini 流式对话（Markdown + 数学公式渲染）
+- 内置可选的中继代理：本地无法直连 Google 时通过云服务器转发 Gemini 请求
 - 可调节透明度
 - 全局快捷键控制显隐
 
@@ -91,8 +92,56 @@ npm start
 - 输入 `ruanjian` → 候选第一个为 **软件**
 - 输入 `jisuanji` → 候选第一个为 **计算机**
 
-词库内置了常用汉字及技术/面试相关词汇（软件工程、算法、数据结构、系统设计等）。
+词库基于开源数据生成（mozillazg/pinyin-data、rime/rime-essay、OpenCC），覆盖约 18k 常用词 + 5k+ 汉字，外加技术/面试场景的补充词表。
 
 ### 切回英文输入
 
 再次点击 **`中`** 按钮，变回 **`En`**，即可正常输入英文。
+
+### 重新生成词库
+
+词典文件 `renderer/ime/dict.js` 由 `scripts/build-dict.js` 生成。源数据（`.dict-tmp/`，已 gitignored）需先拉取：
+
+```bash
+./scripts/fetch-dict-sources.sh     # 一次性下载 4 个数据源到 .dict-tmp/
+node scripts/build-dict.js          # 生成 renderer/ime/dict.js
+```
+
+要新增技术/行业词汇，编辑 `scripts/build-dict.js` 里的 `EXTRAS` 数组重新生成即可。
+
+---
+
+## 中继代理
+
+如果你所在的网络无法直接访问 `generativelanguage.googleapis.com`，可以走内置的 SOCKS5 隧道转发到云服务器。
+
+### 开关
+
+设置面板有一个「通过中继代理访问 Gemini」勾选项：
+
+- **勾选**（默认）：所有 Gemini 请求经隧道到云服务器，再到 Google
+- **不勾选**：直连，跟普通浏览器访问 Gemini 一样
+
+切换无需重启。开关状态持久化在 `~/Library/Application Support/interview-assistant/proxy-config.json`。
+
+### 工作原理
+
+App 启动时（如果代理开启）：
+
+1. main 进程用内嵌的 SSH 凭证连接预配置的云服务器（基于 [`ssh2`](https://github.com/mscdex/ssh2)）
+2. 本地起一个 SOCKS5 服务监听随机端口
+3. 通过 `session.defaultSession.setProxy()` 让 Electron 所有网络请求都走这个 SOCKS5
+4. SOCKS5 收到连接请求后通过 SSH `direct-tcpip` 转发到目标主机
+
+SSH 凭证以 AES-256-GCM 加密形式内嵌在 `proxy.js`，运行时解密；服务端授权配置严格限制为 `permitopen="generativelanguage.googleapis.com:443"`、`command="/bin/false"`、`no-pty`，即使凭证泄露也只能用于转发 Gemini 请求。
+
+### 自部署
+
+如果你要换成自己的中继服务器：
+
+1. 在你的服务器上生成一个新的受限授权（仅允许端口转发到 Gemini）：
+   ```
+   no-pty,no-X11-forwarding,no-agent-forwarding,no-user-rc,command="/bin/false",permitopen="generativelanguage.googleapis.com:443" ssh-ed25519 AAAA... your-key-comment
+   ```
+2. 修改 `proxy.js` 顶部的 `REMOTE_HOST` / `REMOTE_PORT` / `REMOTE_USER`
+3. 重新生成 `PAYLOAD`（私钥的 AES-GCM 密文，用 `C1`–`C4` 和 `TAG_SALT` 派生 key）
