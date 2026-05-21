@@ -1,6 +1,6 @@
 {
   "name": "meeting-assistant",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Floating semi-transparent meeting assistant powered by Gemini, invisible during screen sharing on macOS",
   "main": "main.js",
   "author": "yangxu",
