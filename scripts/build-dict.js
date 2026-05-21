@@ -182,11 +182,12 @@ for (const [c, list] of charPinyin) {
   if (!(c in charScore[p])) charScore[p][c] = 0;
 }
 
-const PER_PINYIN_CHAR_LIMIT = 60;
+// No per-pinyin cap: show every basic-CJK char with that pinyin,
+// ordered by score so common ones land on early pages.
 const charDictRaw = {};
 for (const [p, m] of Object.entries(charScore)) {
   const sorted = Object.entries(m).sort((a, b) => b[1] - a[1]).map((x) => x[0]);
-  charDictRaw[p] = sorted.slice(0, PER_PINYIN_CHAR_LIMIT).join('');
+  charDictRaw[p] = sorted.join('');
 }
 
 // 7. Emit dict.js

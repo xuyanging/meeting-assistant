@@ -45,13 +45,13 @@ window.IMEEngine = (() => {
       if (wordDict[key]) wordDict[key].forEach(add);
     }
 
-    // 单字：第一个合法音节
+    // 单字：第一个合法音节 — 显示该拼音下所有候选字（已按字频降序）
     const first = syllables[0];
     if (SYLLABLES.has(first)) {
-      (charDict[first] || []).slice(0, 8).forEach(add);
+      (charDict[first] || []).forEach(add);
     }
 
-    return candidates.slice(0, 30);
+    return candidates;
   }
 
   function select(index) {
