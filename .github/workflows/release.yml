@@ -32,15 +32,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build universal DMG
-        run: npm run dist:universal
+      - name: Build arm64 DMG
+        run: npm run dist
+
+      - name: Build x64 DMG
+        run: npm run dist:x64
 
       - name: List artifacts
         run: ls -lh dist/
 
-      - name: Attach DMG to release
+      - name: Attach DMGs to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          files: dist/MacAssistant-*.dmg
+          files: |
+            dist/MacAssistant-*-arm64.dmg
+            dist/MacAssistant-*-x64.dmg
           fail_on_unmatched_files: true
