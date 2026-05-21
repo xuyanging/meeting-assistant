@@ -92,7 +92,7 @@ npm start
 - 输入 `ruanjian` → 候选第一个为 **软件**
 - 输入 `jisuanji` → 候选第一个为 **计算机**
 
-词库基于开源数据生成（mozillazg/pinyin-data、rime/rime-essay、OpenCC），覆盖约 18k 常用词 + 5k+ 汉字，外加技术/面试场景的补充词表。
+词库基于开源数据生成（mozillazg/pinyin-data、rime/rime-essay、OpenCC），覆盖约 18k 常用词 + 5k+ 汉字，外加技术/职场场景的补充词表。
 
 ### 切回英文输入
 

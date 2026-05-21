@@ -157,7 +157,7 @@ clearBtn.addEventListener('click', () => {
 
 hideBtn.addEventListener('click', () => window.electronAPI.hide());
 closeBtn.addEventListener('click', () => {
-  if (confirm('退出面试助手?')) window.electronAPI.close();
+  if (confirm('退出会议助手?')) window.electronAPI.close();
 });
 
 // ============ 内置输入法 ============

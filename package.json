@@ -1,7 +1,7 @@
 {
   "name": "interview-assistant",
   "version": "1.0.0",
-  "description": "Floating semi-transparent interview assistant powered by Gemini, invisible during screen sharing on macOS",
+  "description": "Floating semi-transparent meeting assistant powered by Gemini, invisible during screen sharing on macOS",
   "main": "main.js",
   "author": "yangxu",
   "scripts": {
@@ -46,7 +46,7 @@
       "identity": null,
       "hardenedRuntime": false,
       "gatekeeperAssess": false,
-      "artifactName": "InterviewAssistant-${version}-${arch}.${ext}",
+      "artifactName": "MacAssistant-${version}-${arch}.${ext}",
       "extendInfo": {
         "LSUIElement": false,
         "NSHighResolutionCapable": true

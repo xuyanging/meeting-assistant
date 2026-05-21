@@ -79,7 +79,7 @@ function pinyinOf(word) {
 const MIN_FREQ = 100;
 const TOP_WORDS = 18000;
 
-// Hard-include these regardless of essay frequency — tech/interview vocabulary
+// Hard-include these regardless of essay frequency — tech/workplace vocabulary
 // that gets ranked below 18k cutoff in a general-corpus frequency list.
 const EXTRAS = [
   // 编程
@@ -94,8 +94,9 @@ const EXTRAS = [
   '单一职责原则','开闭原则','依赖注入','控制反转','函数式编程','接口文档',
   '单元测试','集成测试','数据结构','二叉树','红黑树','哈希表','链表','图算法',
   '动态规划','贪心算法','时间复杂度','空间复杂度',
-  // 面试常用
-  '面试','简历','应聘','招聘','薪资','职位','团队','合作','沟通','成长',
+  // 职场常用
+  '会议','汇报','纪要','议题','决议','讨论','协作','协同','跟进','复盘',
+  '团队','合作','沟通','成长','简历','薪资','职位',
   '挑战','机会','规划','责任','成果','研究','分析','结果','效果','方向',
   '思路','流程','标准','规范','文档','报告','总结','反思','改进','完善',
   '创新','突破','价值','意义','优势','劣势','优点','缺点','原因','本质',
