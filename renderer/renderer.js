@@ -34,7 +34,6 @@ const IME_PAGE_SIZE = 5;
 
 // ============ State ============
 const STORAGE_KEY = 'meeting-assistant-settings';
-const LEGACY_STORAGE_KEY = 'interview-assistant-settings';
 let settings = loadSettings();
 let conversation = [];
 let isStreaming = false;
@@ -52,15 +51,7 @@ function defaultSettings() {
 
 function loadSettings() {
   try {
-    let raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-      if (legacy) {
-        localStorage.setItem(STORAGE_KEY, legacy);
-        localStorage.removeItem(LEGACY_STORAGE_KEY);
-        raw = legacy;
-      }
-    }
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return Object.assign(defaultSettings(), JSON.parse(raw));
   } catch (e) {
     console.warn('settings load failed', e);
