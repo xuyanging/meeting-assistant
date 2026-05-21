@@ -4,14 +4,18 @@
 
 ## 下载
 
-到 [Releases](https://github.com/xuyanging/meeting-assistant/releases/latest) 下载最新版 DMG：
+到 [Releases](https://github.com/xuyanging/meeting-assistant/releases/latest) 下载最新版：
 
-- `MacAssistant-*-arm64.dmg` — Apple Silicon (M1/M2/M3/M4)
-- `MacAssistant-*-x64.dmg` — Intel Mac
+| 平台 | 文件 |
+|---|---|
+| macOS Apple Silicon | `MacAssistant-*-arm64.dmg` |
+| macOS Intel | `MacAssistant-*-x64.dmg` |
+| Windows x64 | `MacAssistant-*-win-x64.exe` |
+| Windows ARM64 | `MacAssistant-*-win-arm64.exe` |
 
-DMG 未代码签名，**首次打开**需绕过 Gatekeeper：
-- Finder 中右键 `Mac Assistant.app` → 打开 → 在弹出框点「打开」
-- 或终端执行：`xattr -dr com.apple.quarantine /Applications/Mac\ Assistant.app`
+**macOS**：DMG 未代码签名，首次打开右键 `Mac Assistant.app` → 打开，或终端 `xattr -dr com.apple.quarantine /Applications/Mac\ Assistant.app`
+
+**Windows**：安装包未代码签名，首次运行 SmartScreen 警告 →「更多信息」→「仍要运行」。屏幕共享不可见依赖 Win10 2004+ 的 `WDA_EXCLUDEFROMCAPTURE`。
 
 ## 功能
 
