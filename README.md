@@ -4,13 +4,14 @@
 
 ## 下载
 
-到 [Releases](https://github.com/xuyanging/meeting-assistant/releases/latest) 下载最新版 DMG（Apple Silicon）。
+到 [Releases](https://github.com/xuyanging/meeting-assistant/releases/latest) 下载最新版 DMG：
+
+- `MacAssistant-*-arm64.dmg` — Apple Silicon (M1/M2/M3/M4)
+- `MacAssistant-*-x64.dmg` — Intel Mac
 
 DMG 未代码签名，**首次打开**需绕过 Gatekeeper：
 - Finder 中右键 `Mac Assistant.app` → 打开 → 在弹出框点「打开」
 - 或终端执行：`xattr -dr com.apple.quarantine /Applications/Mac\ Assistant.app`
-
-Intel Mac 用户请从源码编译（见下方「安装」）。
 
 ## 功能
 
