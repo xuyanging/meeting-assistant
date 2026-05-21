@@ -32,7 +32,7 @@ let socksPort = null;
 let stopped = true;
 
 function log(...args) {
-  console.log('[proxy]', ...args);
+  try { console.log('[proxy]', ...args); } catch (_) { /* stdout EPIPE etc. */ }
 }
 
 function connectSSH() {

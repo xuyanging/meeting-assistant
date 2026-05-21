@@ -3,6 +3,11 @@ const path = require('path');
 const fs = require('fs');
 const { startProxy, stopProxy } = require('./proxy');
 
+// Swallow EPIPE etc. on stdout/stderr — happens when the parent npm shell
+// exits or terminal disconnects, and would otherwise surface as an
+// uncaught exception dialog the next time anything calls console.log.
+for (const s of [process.stdout, process.stderr]) s.on('error', () => {});
+
 let mainWindow = null;
 let proxyPort = null;
 
