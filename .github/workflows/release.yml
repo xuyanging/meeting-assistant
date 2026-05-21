@@ -33,10 +33,10 @@ jobs:
         run: npm ci
 
       - name: Build arm64 DMG
-        run: npm run dist
+        run: npx electron-builder --mac --arm64 --publish never
 
       - name: Build x64 DMG
-        run: npm run dist:x64
+        run: npx electron-builder --mac --x64 --publish never
 
       - name: List artifacts
         run: ls -lh dist/
