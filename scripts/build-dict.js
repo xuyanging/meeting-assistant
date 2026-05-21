@@ -50,7 +50,9 @@ for (const line of wordsTxt.split('\n')) {
 }
 
 // 4. essay.txt: word(trad)+freq -> simplified -> freq
+//    Also collect single-char freq for character-level pinyin ranking.
 const wordFreq = new Map();
+const charDirectFreq = new Map();
 for (const line of essayTxt.split('\n')) {
   const parts = line.split('\t');
   if (parts.length < 2) continue;
@@ -59,9 +61,13 @@ for (const line of essayTxt.split('\n')) {
   const tw = parts[0];
   if (!isCJK(tw)) continue;
   const len = [...tw].length;
-  if (len < 2 || len > 6) continue;
+  if (len > 6) continue;
   const sw = t2s(tw);
-  wordFreq.set(sw, (wordFreq.get(sw) || 0) + f);
+  if (len === 1) {
+    charDirectFreq.set(sw, (charDirectFreq.get(sw) || 0) + f);
+  } else {
+    wordFreq.set(sw, (wordFreq.get(sw) || 0) + f);
+  }
 }
 
 function pinyinOf(word) {
@@ -136,8 +142,22 @@ for (const w of EXTRAS) {
   }
 }
 
-// 6. charDict: for each (char, pinyin) in our words, sum freq; sort per pinyin
+// 6. charDict: rank chars per pinyin using (a) single-char freq from essay,
+//    plus (b) cumulative freq from the words that contain the char.
 const charScore = {}; // pinyin -> { char -> score }
+
+// (a) Direct single-char frequency from essay (most reliable signal —
+//     captures common surnames like 薛/邓 that rarely appear in
+//     multi-char essay phrases).
+for (const [c, f] of charDirectFreq) {
+  const py = charPinyin.get(c);
+  if (!py || !py[0]) continue;
+  const p = py[0];
+  if (!charScore[p]) charScore[p] = {};
+  charScore[p][c] = (charScore[p][c] || 0) + f;
+}
+
+// (b) Cumulative score from multi-char words.
 for (const [w, f] of ranked) {
   const chars = [...w];
   const py = pinyinOf(w);
@@ -151,10 +171,10 @@ for (const [w, f] of ranked) {
   }
 }
 
-// Add chars from chars.txt with fallback score 0 (so rare-but-valid chars still appear)
+// Fallback: include every basic-CJK char with its primary pinyin at score 0
+// so rare chars still show up (just at the end of the candidate list).
 for (const [c, list] of charPinyin) {
   if (!isCJK(c)) continue;
-  // only basic CJK (avoid Extension A/B which are rare)
   if (c.codePointAt(0) > 0x9FA5) continue;
   const p = list[0];
   if (!p) continue;
@@ -162,7 +182,7 @@ for (const [c, list] of charPinyin) {
   if (!(c in charScore[p])) charScore[p][c] = 0;
 }
 
-const PER_PINYIN_CHAR_LIMIT = 25;
+const PER_PINYIN_CHAR_LIMIT = 60;
 const charDictRaw = {};
 for (const [p, m] of Object.entries(charScore)) {
   const sorted = Object.entries(m).sort((a, b) => b[1] - a[1]).map((x) => x[0]);
