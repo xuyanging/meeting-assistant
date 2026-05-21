@@ -11,7 +11,7 @@ on:
         required: true
 
 jobs:
-  build:
+  mac:
     runs-on: macos-latest
     permissions:
       contents: write
@@ -48,4 +48,57 @@ jobs:
           files: |
             dist/MacAssistant-*-arm64.dmg
             dist/MacAssistant-*-x64.dmg
+          fail_on_unmatched_files: true
+
+  windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+    steps:
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG_NAME }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build x64 installer
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: Smoke test x64 launch
+        shell: pwsh
+        run: |
+          $exe = "dist\win-unpacked\Mac Assistant.exe"
+          if (-not (Test-Path $exe)) { throw "Not found: $exe" }
+          Write-Host "Launching $exe"
+          $proc = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 12
+          if ($proc.HasExited) {
+            throw "App exited within 12s (exit code: $($proc.ExitCode))"
+          }
+          Write-Host "App alive after 12s — smoke OK, terminating"
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+          Get-Process -Name "Mac Assistant" -ErrorAction SilentlyContinue | Stop-Process -Force
+
+      - name: Build arm64 installer
+        run: npx electron-builder --win --arm64 --publish never
+
+      - name: List artifacts
+        shell: pwsh
+        run: Get-ChildItem -Path dist
+
+      - name: Attach Windows installers
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          files: dist/MacAssistant-*-win-*.exe
           fail_on_unmatched_files: true

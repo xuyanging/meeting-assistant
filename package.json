@@ -9,7 +9,8 @@
     "dev": "electron . --enable-logging",
     "dist": "electron-builder --mac --arm64",
     "dist:x64": "electron-builder --mac --x64",
-    "dist:universal": "electron-builder --mac --universal"
+    "dist:universal": "electron-builder --mac --universal",
+    "dist:win": "electron-builder --win --x64 --arm64"
   },
   "devDependencies": {
     "electron": "^33.2.0",
@@ -72,6 +73,21 @@
         "width": 540,
         "height": 380
       }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "artifactName": "MacAssistant-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "deleteAppDataOnUninstall": false
     }
   },
   "dependencies": {
